@@ -1,0 +1,15 @@
+@(form: Form[User])(implicit flash: Flash)
+
+@main("Register") {
+
+    @helper.form(action = routes.Application.processRegister) {
+        @helper.inputText(form("login"))
+        @helper.inputPassword(form("password"))
+        <select name="roles" id="roles" multiple>
+            <option value="ADMIN">ADMIN</option>
+            <option value="SUPERADMIN">SUPERADMIN</option>
+        </select>
+        <input type="submit" value="Register" />
+    }
+
+}
