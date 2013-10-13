@@ -1,14 +1,12 @@
-@(form: Form[User])(implicit flash: Flash)
+@(form: Form[User])(implicit flash: Flash, request: Request[AnyContent])
 
 @main("Register") {
 
     @helper.form(action = routes.Application.processRegister) {
         @helper.inputText(form("login"))
         @helper.inputPassword(form("password"))
-        <select name="roles" id="roles" multiple>
-            <option value="ADMIN">ADMIN</option>
-            <option value="SUPERADMIN">SUPERADMIN</option>
-        </select>
+        @multicheckbox(form("roles"), Application.availableRoles)
+
         <input type="submit" value="Register" />
     }
 

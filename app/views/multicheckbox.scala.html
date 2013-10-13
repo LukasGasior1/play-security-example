@@ -1,0 +1,9 @@
+@(field: play.api.data.Field, options: Seq[(String,String)], args: (Symbol,Any)*)
+
+@values = @{ field.indexes.map { v => field("[" + v + "]").value } }
+
+@helper.input(field, args:_*) { (id, name, value, htmlArgs) =>
+    @for((el, index) <- options.zipWithIndex) {
+        <input type="checkbox" name="@{name + "[" + index + "]"}" value="@el._1" @{if(values.contains(Some(el._1))) "checked" else ""}/>@el._2
+    }
+}

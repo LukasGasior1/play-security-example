@@ -39,9 +39,8 @@ package object controllers {
   def HasAnyRole(roles: String*)(f: => User => Request[AnyContent] => Result) =
     WithAuthentication { user => request =>
       if (user.hasAnyRole(roles:_*))
-        onUnauthorized(request)
-      else
         f(user)(request)
+      else
+        onUnauthorized(request)
     }
-
 }

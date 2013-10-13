@@ -7,6 +7,8 @@ import models.{User, UserDAO}
 
 object Application extends Controller {
 
+  val availableRoles = Seq(("ADMIN", "Administrator"), ("TESTER", "Tester"))
+
   implicit class StringWithEncode(str: String) {
     def encode(): String = {
       val md = java.security.MessageDigest.getInstance("SHA-1")
@@ -42,7 +44,7 @@ object Application extends Controller {
     Ok(views.html.login())
   }
 
-  def adminArea = HasAnyRole("ADMIN", "SUPERADMIN") { implicit user => implicit request =>
+  def adminArea = HasRole("ADMIN") { implicit user => implicit request =>
     Ok(views.html.admin())
   }
 
@@ -58,19 +60,19 @@ object Application extends Controller {
     mapping(
       "login" -> text,
       "password" -> text,
-      "roles" -> list[String](text)
+      "roles" -> seq(text)
     ) {
-      (login, password, roles) => User(login = login, password = password, roles = roles)
+      (login, password, roles) => User(login = login, password = password.encode(), roles = roles)
     } {
-      user => Some((user.login, user.password, user.roles))
+      user => Some((user.login, "", user.roles))
     }
   )
 
   def processRegister = Action { implicit request =>
     registerForm.bindFromRequest.fold(
       formWithErrors => Redirect(routes.Application.registerPage).flashing("message" -> "Form errors !"),
-      form => {
-        UserDAO.save(form)
+      user => {
+        UserDAO.save(user)
         Redirect(routes.Application.index).flashing("message" -> "Your account has been registered.")
       }
     )

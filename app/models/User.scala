@@ -4,7 +4,7 @@ import com.novus.salat.dao.SalatDAO
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.MongoDBObject
 
-case class User(id: ObjectId = new ObjectId, login: String, password: String, roles: List[String]) {
+case class User(id: ObjectId = new ObjectId, login: String, password: String, roles: Seq[String]) {
 
   def hasRole(role: String) =
     roles contains role

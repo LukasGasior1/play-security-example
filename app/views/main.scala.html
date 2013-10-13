@@ -1,4 +1,4 @@
-@(title: String)(content: Html)(implicit flash: Flash, user: Option[User] = None)
+@(title: String)(content: Html)(implicit flash: Flash, request: Request[AnyContent], user: Option[User] = None)
 
 <!DOCTYPE html>
 
@@ -11,6 +11,10 @@
         <ul>
             <li><a href="/">Index</a></li>
             <li><a href="/login">Login</a></li>
+            @if(controllers.Security.hasRole("ADMIN")) {
+                asd
+            }
+
             @for(user <- user) {
                 <li><a href="/logged">Logged user area</a></li>
             }
