@@ -2,12 +2,10 @@
 
 @main("Register") {
 
-    @helper.form(action = routes.Application.processRegister) {
+    @helper.form(action = routes.Register.processRegister) {
         @helper.inputText(form("login"))
         @helper.inputPassword(form("password"))
-        @multicheckbox(form("roles"), Application.availableRoles)
-
+        @multiselect(form("roles"), controllers.Register.availableRoles)
         <input type="submit" value="Register" />
     }
-
 }

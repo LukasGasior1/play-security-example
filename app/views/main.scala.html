@@ -1,4 +1,6 @@
-@(title: String)(content: Html)(implicit flash: Flash, request: Request[AnyContent], user: Option[User] = None)
+@(title: String)(content: Html)(implicit flash: Flash, request: Request[AnyContent])
+
+@import views.SecurityHelper._
 
 <!DOCTYPE html>
 
@@ -11,17 +13,13 @@
         <ul>
             <li><a href="/">Index</a></li>
             <li><a href="/login">Login</a></li>
-            @if(controllers.Security.hasRole("ADMIN")) {
-                asd
-            }
-
-            @for(user <- user) {
+            @isLogged {
                 <li><a href="/logged">Logged user area</a></li>
             }
-            @for(user <- user if user.hasAnyRole("ADMIN", "SUPERADMIN")) {
+            @hasAnyRole("ADMIN", "SUPERADMIN") {
                 <li><a href="/admin">Admin area</a></li>
             }
-            @for(user <- user) {
+            @isLogged {
                 <li><a href="/logout">Logout</a></li>
             }
             <li><a href="/register">Create user</a></li>

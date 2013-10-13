@@ -4,57 +4,12 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import models.{User, UserDAO}
+import play.api.cache.Cache
+import play.api.Play.current
 
-object Application extends Controller {
+object Register extends Controller {
 
   val availableRoles = Seq(("ADMIN", "Administrator"), ("TESTER", "Tester"))
-
-  implicit class StringWithEncode(str: String) {
-    def encode(): String = {
-      val md = java.security.MessageDigest.getInstance("SHA-1")
-      new String(md.digest(str.getBytes))
-    }
-  }
-
-  val loginForm = Form(
-    tuple(
-      "login" -> text,
-      "password" -> text
-    ) verifying (result => result match {
-      case (login, password) => UserDAO.findByLoginAndPassword(login, password.encode).isDefined
-    })
-  )
-
-  def processLogin = Action { implicit request =>
-    loginForm.bindFromRequest.fold(
-      formWithErrors => Redirect(routes.Application.loginPage).flashing("message" -> "Login or password incorrect"),
-      form => Redirect(routes.Application.index).withSession(sessionKey -> form._1)
-    )
-  }
-
-  def logout = Action { _ =>
-    Redirect(routes.Application.index).withNewSession.flashing("message" -> "You are now logged out!")
-  }
-
-  def index = Action { implicit request =>
-    Ok(views.html.index())
-  }
-
-  def loginPage = Action { implicit request =>
-    Ok(views.html.login())
-  }
-
-  def adminArea = HasRole("ADMIN") { implicit user => implicit request =>
-    Ok(views.html.admin())
-  }
-
-  def loggedUserArea = WithAuthentication { implicit user => implicit request =>
-    Ok(views.html.logged())
-  }
-
-  def registerPage = Action { implicit request =>
-    Ok(views.html.register(registerForm))
-  }
 
   val registerForm = Form[User](
     mapping(
@@ -68,14 +23,69 @@ object Application extends Controller {
     }
   )
 
+  def registerPage = Action { implicit request =>
+    Ok(views.html.register(registerForm))
+  }
+
   def processRegister = Action { implicit request =>
     registerForm.bindFromRequest.fold(
-      formWithErrors => Redirect(routes.Application.registerPage).flashing("message" -> "Form errors !"),
+      formWithErrors => Redirect(routes.Register.registerPage).flashing("message" -> "Form errors!"),
       user => {
         UserDAO.save(user)
-        Redirect(routes.Application.index).flashing("message" -> "Your account has been registered.")
+        Redirect(routes.Main.index).flashing("message" -> "Your account has been registered.")
+      }
+    )
+  }
+}
+
+object UserSession extends Controller with Secured {
+
+  val loginForm = Form(
+    tuple(
+      "login" -> text,
+      "password" -> text
+    ) verifying (result => result match {
+      case (login, password) => UserDAO.findByLoginAndPassword(login, password.encode).isDefined
+    })
+  )
+
+  def loginPage = Action { implicit request =>
+    Ok(views.html.login())
+  }
+
+  def processLogin = Action { implicit request =>
+    val loginError = Redirect(routes.UserSession.loginPage).flashing("message" -> "Login or password incorrect")
+    loginForm.bindFromRequest.fold(
+      formWithErrors => loginError,
+      form => {
+        UserDAO.findByLogin(form._1) match {
+          case Some(user: User) => {
+            Cache.set(form._1, user, 10000)
+            Redirect(routes.Main.index).withSession("user-login" -> form._1)
+          }
+          case None => loginError
+        }
       }
     )
   }
 
+  def logout = WithAuthentication { user => _ =>
+    Cache.remove(user.login)
+    Redirect(routes.Main.index).withNewSession.flashing("message" -> "You have been logged out!")
+  }
+}
+
+object Main extends Controller with Secured {
+
+  def index = Action { implicit request =>
+    Ok(views.html.index())
+  }
+
+  def adminArea = HasRole("ADMIN") { implicit user => implicit request =>
+    Ok(views.html.admin())
+  }
+
+  def loggedUserArea = WithAuthentication { implicit user => implicit request =>
+    Ok(views.html.logged())
+  }
 }
