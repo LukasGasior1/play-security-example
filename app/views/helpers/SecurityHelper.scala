@@ -21,11 +21,11 @@ object SecurityHelper {
     if (user.isDefined) html
 
   def hasRole(role: String)(html: Html)(implicit request: Request[AnyContent]) =
-    for (user <- user if user.hasRole(role)) html
+    for (user <- user if user.hasRole(role)) yield html
 
   def hasAllRoles(roles: String*)(html: Html)(implicit request: Request[AnyContent]) =
-    for (user <- user if user.hasAllRoles(roles:_*)) html
+    for (user <- user if user.hasAllRoles(roles:_*)) yield html
 
   def hasAnyRole(roles: String*)(html: Html)(implicit request: Request[AnyContent]) =
-    for (user <- user if user.hasAnyRole(roles:_*)) html
+    for (user <- user if user.hasAnyRole(roles:_*)) yield html
 }
