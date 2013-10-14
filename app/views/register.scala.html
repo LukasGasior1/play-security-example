@@ -1,0 +1,11 @@
+@(form: Form[User])(implicit flash: Flash, request: Request[AnyContent])
+
+@main("Register") {
+
+    @helper.form(action = routes.Register.processRegister) {
+        @helper.inputText(form("login"))
+        @helper.inputPassword(form("password"))
+        @helpers.multiselect(form("roles"), controllers.Register.availableRoles)
+        <input type="submit" value="Register" />
+    }
+}

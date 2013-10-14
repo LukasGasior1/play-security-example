@@ -1,0 +1,32 @@
+@(title: String)(content: Html)(implicit flash: Flash, request: Request[AnyContent])
+
+@import views.helpers.SecurityHelper._
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+    </head>
+    <body>
+        <ul>
+            <li><a href="/">Index</a></li>
+            <li><a href="/login">Login</a></li>
+            @isLogged {
+                <li><a href="/logged">Logged user area</a></li>
+            }
+            @hasAnyRole("ADMIN", "SUPERADMIN") {
+                <li><a href="/admin">Admin area</a></li>
+            }
+            @isLogged {
+                <li><a href="/logout">Logout</a></li>
+            }
+            <li><a href="/register">Create user</a></li>
+        </ul>
+        @for(msg <- flash.get("message")) {
+            <h2>@msg</h2>
+        }
+        @content
+    </body>
+</html>

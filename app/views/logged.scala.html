@@ -1,0 +1,5 @@
+@(user: User)(implicit flash: Flash, request: Request[AnyContent])
+
+@main("Logged area") {
+    <h1>Hi! You are logged in as: @user.login</h1>
+}
