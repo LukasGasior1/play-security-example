@@ -15,32 +15,17 @@ object SecurityHelper {
     } yield user.asInstanceOf[User]
 
   def isNotLogged(html: Html)(implicit request: Request[AnyContent]) =
-    user match {
-      case Some(user: User) => ""
-      case None => html
-    }
+    if (!user.isDefined) html
 
   def isLogged(html: Html)(implicit request: Request[AnyContent]) =
-    user match {
-      case Some(user: User) => html
-      case None => ""
-    }
+    if (user.isDefined) html
 
   def hasRole(role: String)(html: Html)(implicit request: Request[AnyContent]) =
-    user match {
-      case Some(user: User) if user.hasRole(role) => html
-      case None => ""
-    }
+    for (user <- user if user.hasRole(role)) html
 
   def hasAllRoles(roles: String*)(html: Html)(implicit request: Request[AnyContent]) =
-    user match {
-      case Some(user: User) if user.hasAllRoles(roles:_*) => html
-      case None => ""
-    }
+    for (user <- user if user.hasAllRoles(roles:_*)) html
 
   def hasAnyRole(roles: String*)(html: Html)(implicit request: Request[AnyContent]) =
-    user match {
-      case Some(user: User) if user.hasAnyRole(roles:_*) => html
-      case None => ""
-    }
+    for (user <- user if user.hasAnyRole(roles:_*)) html
 }
